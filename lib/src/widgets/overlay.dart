@@ -735,7 +735,7 @@ class _Pulse extends StatelessWidget {
         } else {
           expandedPercent = 0.0;
         }
-        return 44.0 + (35.0 * expandedPercent);
+        return 44.0 + (5.0 * expandedPercent);
       case FeatureOverlayState.dismissing:
       case FeatureOverlayState.completing:
         return 0; //(44.0 + 35.0) * (1.0 - transitionProgress);
