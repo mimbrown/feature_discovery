@@ -735,7 +735,7 @@ class _Pulse extends StatelessWidget {
         } else {
           expandedPercent = 0.0;
         }
-        return 44.0 + (5.0 * expandedPercent);
+        return 44.0 + (17.0 * expandedPercent);
       case FeatureOverlayState.dismissing:
       case FeatureOverlayState.completing:
         return 0; //(44.0 + 35.0) * (1.0 - transitionProgress);
@@ -824,7 +824,7 @@ class _TapTarget extends StatelessWidget {
       case FeatureOverlayState.closed:
         return 0;
       case FeatureOverlayState.opening:
-        return 20 + 24 * transitionProgress;
+        return 20 + 12 * transitionProgress;
       case FeatureOverlayState.opened:
         double expandedPercent;
         if (transitionProgress < 0.3) {
@@ -834,10 +834,10 @@ class _TapTarget extends StatelessWidget {
         } else {
           expandedPercent = 0;
         }
-        return 44 + (20 * expandedPercent);
+        return 44 + (10 * expandedPercent);
       case FeatureOverlayState.completing:
       case FeatureOverlayState.dismissing:
-        return 20 + 24 * (1 - transitionProgress);
+        return 20 + 12 * (1 - transitionProgress);
     }
     throw ArgumentError.value(state);
   }
