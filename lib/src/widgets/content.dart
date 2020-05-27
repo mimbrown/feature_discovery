@@ -88,7 +88,7 @@ class Content extends StatelessWidget {
                     style: Theme.of(context)
                         .textTheme
                         .bodyText2
-                        .copyWith(color: textColor.withOpacity(0.9)),
+                        .copyWith(color: textColor.withOpacity(0.9), fontSize: 18),
                     child: description,
                   )
               ],
