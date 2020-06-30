@@ -45,7 +45,7 @@ class AnchoredOverlay extends StatelessWidget {
 
 class OverlayBuilder extends StatefulWidget {
   final bool showOverlay;
-  final Function(BuildContext context) overlayBuilder;
+  final Widget Function(BuildContext context) overlayBuilder;
   final Widget child;
 
   const OverlayBuilder(
@@ -87,7 +87,12 @@ class _OverlayBuilderState extends State<OverlayBuilder> {
 
   void showOverlay() {
     overlayEntry = OverlayEntry(
-      builder: widget.overlayBuilder,
+      builder: (context) {
+        return Directionality(
+          textDirection: TextDirection.rtl,
+          child: widget.overlayBuilder(context),
+        );
+      },
     );
     WidgetsBinding.instance.addPostFrameCallback((_) {
       Overlay.of(context).insert(overlayEntry);
