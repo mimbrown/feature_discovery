@@ -5,12 +5,8 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'widgets.dart';
 
-List<String> textsToMatch(List<String> featureIds) {
-  assert(featureIds != null);
-  return featureIds
-      .map((featureId) => 'Test has passed for $featureId')
-      .toList();
-}
+List<String> textsToMatch(List<String> featureIds) =>
+    featureIds.map((featureId) => 'Test has passed for $featureId').toList();
 
 void main() {
   group('Basic behavior', () {
@@ -40,7 +36,7 @@ void main() {
       expect(find.text(texts[0]), findsNothing);
       expect(find.text(texts[1]), findsOneWidget);
       // Test with [completeCurrentStep]
-      FeatureDiscovery.completeCurrentStep(context);
+      await FeatureDiscovery.completeCurrentStep(context);
       await tester.pumpAndSettle();
       expect(find.text(texts[1]), findsNothing);
       expect(find.text(texts[2]), findsOneWidget);
@@ -68,11 +64,11 @@ void main() {
       await tester.pumpAndSettle();
       // First overlay should NOT appear
       expect(find.text(texts[0]), findsNothing);
-      FeatureDiscovery.completeCurrentStep(context);
+      await FeatureDiscovery.completeCurrentStep(context);
       await tester.pumpAndSettle();
       // Second overlay should appear
       expect(find.text(texts[1]), findsOneWidget);
-      FeatureDiscovery.completeCurrentStep(context);
+      await FeatureDiscovery.completeCurrentStep(context);
       await tester.pumpAndSettle();
       // No overlay should remain on screen
       texts.forEach((t) => expect(find.text(t), findsNothing));
@@ -82,16 +78,16 @@ void main() {
   group('Duplicate feature ids', () {
     for (final allowShowingDuplicate in <bool>[true, false]) {
       const featureIds = <String>[
-        'featureIdA',
-        'featureIdB',
-        'featureIdB',
-        'featureIdC',
-      ],
+            'featureIdA',
+            'featureIdB',
+            'featureIdB',
+            'featureIdC',
+          ],
           steps = <String>[
-        'featureIdA',
-        'featureIdB',
-        'featureIdC',
-      ];
+            'featureIdA',
+            'featureIdB',
+            'featureIdC',
+          ];
 
       final texts = textsToMatch(steps);
 
@@ -192,7 +188,7 @@ void main() {
 
     for (final modeEntry in modes.entries) {
       testWidgets(modeEntry.key.toString(), (WidgetTester tester) async {
-        BuildContext context;
+        late BuildContext context;
 
         var triggered = false;
 

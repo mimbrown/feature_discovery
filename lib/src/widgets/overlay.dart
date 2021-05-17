@@ -7,6 +7,8 @@ import 'package:feature_discovery/src/widgets.dart';
 import 'package:flutter/material.dart';
 
 class DescribedFeatureOverlay extends StatefulWidget {
+  static const double kDefaultBackgroundOpacity = 0.96;
+
   /// This id should be unique among all the [DescribedFeatureOverlay] widgets.
   /// Otherwise, multiple overlays would show at once, which is currently
   /// only possible if [allowShowingDuplicate] is set to `true`.
@@ -26,7 +28,11 @@ class DescribedFeatureOverlay extends StatefulWidget {
 
   /// The color of the large circle, where the text sits on.
   /// If null, defaults to [ThemeData.primaryColor].
-  final Color backgroundColor;
+  final Color? backgroundColor;
+
+  /// The opacity of the large circle, where the text sits on.
+  /// If null, defaults to 0.96.
+  final double backgroundOpacity;
 
   /// Color of the target, that is the small circle behind the tap target.
   final Color targetColor;
@@ -39,8 +45,8 @@ class DescribedFeatureOverlay extends StatefulWidget {
   /// It is intended for this to contain a [Text] widget, however, you can pass
   /// any [Widget].
   /// The overlay uses a [DefaultTextStyle] for the title, which is a combination
-  /// of [TextTheme.headline4] from [Theme] and the [textColor].
-  final Widget title;
+  /// of [TextTheme.headline6] from [Theme] and the [textColor].
+  final Widget? title;
 
   /// This is the second content widget, i.e. it is displayed below [description].
   ///
@@ -48,7 +54,7 @@ class DescribedFeatureOverlay extends StatefulWidget {
   /// any [Widget].
   /// The overlay uses a [DefaultTextStyle] for the description, which is a combination
   /// of [TextTheme.bodyText2] from [Theme] and the [textColor].
-  final Widget description;
+  final Widget? description;
 
   /// This is usually an [Icon].
   /// The final tap target will already have a tap listener to finish each step.
@@ -70,7 +76,7 @@ class DescribedFeatureOverlay extends StatefulWidget {
   /// In this case, we try to open the next step.
   ///
   /// When the [Future] finishes and evaluates to `true`, this step will be shown.
-  final Future<bool> Function() onOpen;
+  final Future<bool> Function()? onOpen;
 
   /// Called whenever the user taps outside the overlay area.
   /// This function needs to return a [bool], either from an `async` scope
@@ -78,13 +84,13 @@ class DescribedFeatureOverlay extends StatefulWidget {
   ///
   /// If the function returns `false`, nothing happens. If it returns `true`,
   /// all of the current steps are dismissed.
-  final Future<bool> Function() onDismiss;
+  final Future<bool> Function()? onDismiss;
 
   /// Called when the tap target is tapped.
   /// Whenever the [Future] this function returns finishes with `true`, the feature discovery
   /// will continue and the next step will try to open after a closing animation.
   /// If it completes with `false`, nothing happens.
-  final Future<bool> Function() onComplete;
+  final Future<bool> Function()? onComplete;
 
   /// Controls what happens with content that overflows the background's area.
   ///
@@ -101,16 +107,46 @@ class DescribedFeatureOverlay extends StatefulWidget {
   ///  * [OverflowMode], which has explanations for the different modes.
   final OverflowMode overflowMode;
 
+  /// Duration for overlay open animation.
+  final Duration openDuration;
+
+  /// Duration for target pulse animation.
+  final Duration pulseDuration;
+
+  /// Duration for overlay complete animation.
+  final Duration completeDuration;
+
+  /// Duration for overlay dismiss animation.
+  final Duration dismissDuration;
+
+  /// Controls whether the overlay should be dismissed on touching outside or not.
+  ///
+  /// The default value for [barrierDismissible] is `true`.
+  final bool barrierDismissible;
+
+  /// Controls whether the overlay should be dismissed on touching the background or not.
+  ///
+  /// The default value for [backgroundDismissible] is `false`.
+  final bool backgroundDismissible;
+
+  /// Called whenever the user taps inside the overlay area.
+  /// This function needs to return a [bool], either from an `async` scope
+  /// or as a [Future].
+  ///
+  /// If the function returns `false`, nothing happens. If it returns `true`,
+  /// all of the current steps are dismissed.
+  final Future<bool> Function()? onBackgroundTap;
+
   const DescribedFeatureOverlay({
-    Key key,
-    @required this.featureId,
-    @required this.tapTarget,
+    Key? key,
+    required this.featureId,
+    required this.tapTarget,
     this.backgroundColor,
     this.targetColor = Colors.white,
     this.textColor = Colors.white,
     this.title,
     this.description,
-    @required this.child,
+    required this.child,
     this.onOpen,
     this.onComplete,
     this.onDismiss,
@@ -118,14 +154,19 @@ class DescribedFeatureOverlay extends StatefulWidget {
     this.enablePulsingAnimation = true,
     this.allowShowingDuplicate = false,
     this.overflowMode = OverflowMode.ignore,
-  })  : assert(featureId != null),
-        assert(tapTarget != null),
-        assert(child != null),
-        assert(contentLocation != null),
-        assert(enablePulsingAnimation != null),
-        assert(targetColor != null),
-        assert(textColor != null),
-        assert(overflowMode != null),
+    this.backgroundOpacity = kDefaultBackgroundOpacity,
+    this.openDuration = const Duration(milliseconds: 250),
+    this.pulseDuration = const Duration(milliseconds: 1000),
+    this.completeDuration = const Duration(milliseconds: 250),
+    this.dismissDuration = const Duration(milliseconds: 250),
+    this.barrierDismissible = true,
+    this.backgroundDismissible = false,
+    this.onBackgroundTap,
+  })  : assert(
+          barrierDismissible == true || onDismiss == null,
+          'Cannot provide both a barrierDismissible and onDismiss function\n'
+          'The onDismiss function will never get executed when barrierDismissible is set to false.',
+        ),
         super(key: key);
 
   @override
@@ -135,31 +176,31 @@ class DescribedFeatureOverlay extends StatefulWidget {
 
 class _DescribedFeatureOverlayState extends State<DescribedFeatureOverlay>
     with TickerProviderStateMixin {
-  Size _screenSize;
+  late Size _screenSize;
 
-  FeatureOverlayState _state;
+  FeatureOverlayState? _state;
 
-  double _transitionProgress;
+  double? _transitionProgress;
 
-  AnimationController _openController;
+  late AnimationController _openController;
 
   /// The usual order is open, complete, then dismiss across the project,
   /// but pulse does not exist for most other occurrences.
-  AnimationController _pulseController;
-  AnimationController _completeController;
-  AnimationController _dismissController;
+  late AnimationController _pulseController;
+  late AnimationController _completeController;
+  late AnimationController _dismissController;
 
   /// The local reference to the [Bloc] is needed because it is used in [dispose].
-  Bloc _bloc;
+  late Bloc _bloc;
 
-  Stream<EventType> _eventsStream;
-  StreamSubscription<EventType> _eventsSubscription;
+  Stream<EventType>? _eventsStream;
+  StreamSubscription<EventType>? _eventsSubscription;
 
   /// If either [_complete] or [_dismiss] were called previously,
   /// the overlay is awaiting the closure of itself. This is necessary
   /// because [DescribedFeatureOverlay.onComplete] and [DescribedFeatureOverlay.onDismiss]
   /// are `async` and while those are evaluated, the methods should not execute again.
-  bool _awaitingClosure;
+  late bool _awaitingClosure;
 
   @override
   void initState() {
@@ -217,7 +258,7 @@ class _DescribedFeatureOverlayState extends State<DescribedFeatureOverlay>
     _completeController.dispose();
     _dismissController.dispose();
 
-    _eventsSubscription.cancel();
+    _eventsSubscription!.cancel();
 
     // If this widget is disposed while still showing an overlay,
     // it needs to remove itself from the active overlays.
@@ -243,9 +284,7 @@ class _DescribedFeatureOverlayState extends State<DescribedFeatureOverlay>
   void _setStream(Stream<EventType> newStream) {
     _eventsSubscription?.cancel();
     _eventsStream = newStream;
-    _eventsSubscription = _eventsStream.listen((EventType event) async {
-      assert(event != null);
-
+    _eventsSubscription = _eventsStream!.listen((EventType event) async {
       switch (event) {
         case EventType.open:
           // Only try opening when the active feature id matches the id of this widget.
@@ -257,12 +296,7 @@ class _DescribedFeatureOverlayState extends State<DescribedFeatureOverlay>
           // This overlay was the active feature before this event if it is either opening or already opened.
           if (_state != FeatureOverlayState.opened &&
               _state != FeatureOverlayState.opening) return;
-
-          if (event == EventType.complete) {
-            await _complete();
-          } else {
-            await _dismiss(force: true);
-          }
+          await _completeOrDismiss(event, force: true);
           break;
         default:
           throw ArgumentError.value(event);
@@ -272,12 +306,12 @@ class _DescribedFeatureOverlayState extends State<DescribedFeatureOverlay>
 
   void _initAnimationControllers() {
     _openController = AnimationController(
-        vsync: this, duration: const Duration(milliseconds: 250))
+        vsync: this, duration: widget.openDuration)
       ..addListener(
           () => setState(() => _transitionProgress = _openController.value));
 
     _pulseController = AnimationController(
-        vsync: this, duration: const Duration(milliseconds: 1000))
+        vsync: this, duration: widget.pulseDuration)
       ..addListener(
           () => setState(() => _transitionProgress = _pulseController.value))
       ..addStatusListener(
@@ -288,13 +322,13 @@ class _DescribedFeatureOverlayState extends State<DescribedFeatureOverlay>
         },
       );
 
-    _completeController = AnimationController(
-        vsync: this, duration: const Duration(milliseconds: 250))
-      ..addListener(() =>
-          setState(() => _transitionProgress = _completeController.value));
+    _completeController =
+        AnimationController(vsync: this, duration: widget.completeDuration)
+          ..addListener(() =>
+              setState(() => _transitionProgress = _completeController.value));
 
     _dismissController = AnimationController(
-        vsync: this, duration: const Duration(milliseconds: 250))
+        vsync: this, duration: widget.dismissDuration)
       ..addListener(
           () => setState(() => _transitionProgress = _dismissController.value));
   }
@@ -305,9 +339,7 @@ class _DescribedFeatureOverlayState extends State<DescribedFeatureOverlay>
     _bloc.activeOverlays++;
 
     if (widget.onOpen != null) {
-      final shouldOpen = await widget.onOpen();
-      assert(shouldOpen != null,
-          'You need to return a [Future] that completes with true or false in [onOpen].');
+      final shouldOpen = await widget.onOpen!();
       if (!shouldOpen) {
         await FeatureDiscovery.completeCurrentStep(context);
         return;
@@ -326,57 +358,38 @@ class _DescribedFeatureOverlayState extends State<DescribedFeatureOverlay>
     setState(() => _state = FeatureOverlayState.opened);
 
     if (widget.enablePulsingAnimation == true) {
-      _pulseController.forward(from: 0);
+      unawaited(_pulseController.forward(from: 0));
     }
   }
 
-  Future<void> _complete() async {
+  Future<void> _complete({bool force = false}) =>
+      _completeOrDismiss(EventType.complete, force: force);
+
+  Future<void> _dismiss({bool force = false}) =>
+      _completeOrDismiss(EventType.dismiss, force: force);
+
+  Future<void> _completeOrDismiss(EventType event, {bool force = false}) async {
+    assert(event == EventType.complete || event == EventType.dismiss);
+    final isComplete = event == EventType.complete;
+
     // The method might be triggered multiple times.
     if (_awaitingClosure) return;
 
     _awaitingClosure = true;
 
-    if (widget.onComplete != null) {
-      bool shouldComplete;
+    final function = isComplete ? widget.onComplete : widget.onDismiss;
+    if (!force && function != null) {
+      bool shouldMoveOn;
       try {
-        shouldComplete = await widget.onComplete();
+        shouldMoveOn = await function();
       } finally {
         _awaitingClosure = false;
       }
 
-      assert(shouldComplete != null,
-          'You need to return a [Future] that completes with true or false in [onComplete].');
-      if (!shouldComplete) return;
+      if (!shouldMoveOn) return;
+      _awaitingClosure = true;
     }
-    _openController.stop();
-    _pulseController.stop();
 
-    // setState will be called in the animation listener.
-    _state = FeatureOverlayState.completing;
-    await _completeController.forward(from: 0);
-    // This will be called after the animation is done because the TickerFuture
-    // from forward is completed when the animation is complete.
-    _close();
-  }
-
-  Future<void> _dismiss({bool force = false}) async {
-    // The method might be triggered multiple times, especially when swiping.
-    if (_awaitingClosure) return;
-
-    _awaitingClosure = true;
-
-    if (!force && widget.onDismiss != null) {
-      bool shouldDismiss;
-      try {
-        shouldDismiss = await widget.onDismiss();
-      } finally {
-        _awaitingClosure = false;
-      }
-
-      assert(shouldDismiss != null,
-          'You need to return a [Future] that completes with true or false in [onDismiss].');
-      if (!shouldDismiss) return;
-    }
     _openController.stop();
     _pulseController.stop();
 
@@ -386,7 +399,7 @@ class _DescribedFeatureOverlayState extends State<DescribedFeatureOverlay>
     // Otherwise, the overlay would jump from opening to opened and
     // run the dismissal animation from there.
     //
-    // We do not do this in _complete because the completion animation
+    // We do not do this in the event is [complete] because the completion animation
     // does not animate backwards, i.e. the circle just grows when completing.
     // On the flip side, the dismiss animation can be seen as a reversed open animation.
     // This is not perfect because e.g. the curves are different, but it looks
@@ -394,11 +407,15 @@ class _DescribedFeatureOverlayState extends State<DescribedFeatureOverlay>
     final previousState = _state;
 
     // setState will be called in the animation listener.
-    _state = FeatureOverlayState.dismissing;
-    await _dismissController.forward(
-        from: previousState == FeatureOverlayState.opening
-            ? 1 - _transitionProgress
-            : 0);
+    _state = isComplete
+        ? FeatureOverlayState.completing
+        : FeatureOverlayState.dismissing;
+
+    final from = !isComplete && previousState == FeatureOverlayState.opening
+        ? 1 - _transitionProgress!
+        : 0;
+    final controller = isComplete ? _completeController : _dismissController;
+    await controller.forward(from: from.toDouble());
     // This will be called after the animation is done because the TickerFuture
     // from forward is completed when the animation is complete.
     _close();
@@ -434,7 +451,7 @@ class _DescribedFeatureOverlayState extends State<DescribedFeatureOverlay>
     return backgroundRadius;
   }
 
-  Offset _backgroundPosition(Offset anchor, ContentLocation contentLocation) {
+  Offset? _backgroundPosition(Offset anchor, ContentLocation contentLocation) {
     final width = min(_screenSize.width, _screenSize.height);
     final isBackgroundCentered = _isCloseToTopOrBottom(anchor);
 
@@ -443,17 +460,21 @@ class _DescribedFeatureOverlayState extends State<DescribedFeatureOverlay>
     } else {
       final startingBackgroundPosition = anchor;
 
-      Offset endingBackgroundPosition;
+      Offset? endingBackgroundPosition;
       switch (contentLocation) {
         case ContentLocation.above:
           endingBackgroundPosition = Offset(
-              width / 2.0 + (_isOnLeftHalfOfScreen(anchor) ? -20.0 : 20.0),
-              anchor.dy - (width / 2.0) + 40.0);
+              anchor.dx -
+                  width / 2.0 +
+                  (_isOnLeftHalfOfScreen(anchor) ? -20.0 : 20.0),
+              anchor.dy - (width / 2.0) + 80.0);
           break;
         case ContentLocation.below:
           endingBackgroundPosition = Offset(
-              width / 2.0 + (_isOnLeftHalfOfScreen(anchor) ? -20.0 : 20.0),
-              anchor.dy + (width / 2.0) - 40.0);
+              anchor.dx -
+                  width / 2.0 +
+                  (_isOnLeftHalfOfScreen(anchor) ? -20.0 : 20.0),
+              anchor.dy + (width / 2.0) - 80.0);
           break;
         case ContentLocation.trivial:
           throw ArgumentError.value(contentLocation);
@@ -463,20 +484,21 @@ class _DescribedFeatureOverlayState extends State<DescribedFeatureOverlay>
         case FeatureOverlayState.opening:
           final adjustedPercent =
               const Interval(0.0, 0.8, curve: Curves.easeOut)
-                  .transform(_transitionProgress);
+                  .transform(_transitionProgress!);
           return Offset.lerp(startingBackgroundPosition,
               endingBackgroundPosition, adjustedPercent);
         case FeatureOverlayState.completing:
           return endingBackgroundPosition;
         case FeatureOverlayState.dismissing:
           return Offset.lerp(endingBackgroundPosition,
-              startingBackgroundPosition, _transitionProgress);
+              startingBackgroundPosition, _transitionProgress!);
         case FeatureOverlayState.opened:
           return endingBackgroundPosition;
         case FeatureOverlayState.closed:
           return startingBackgroundPosition;
+        case null:
+          return throw ArgumentError.notNull();
       }
-      throw ArgumentError.value(_state);
     }
   }
 
@@ -497,7 +519,7 @@ class _DescribedFeatureOverlayState extends State<DescribedFeatureOverlay>
     }
   }
 
-  Offset _contentCenterPosition(Offset anchor) {
+  Offset? _contentCenterPosition(Offset anchor) {
     final width = min(_screenSize.width, _screenSize.height);
     final isBackgroundCentered = _isCloseToTopOrBottom(anchor);
 
@@ -506,7 +528,7 @@ class _DescribedFeatureOverlayState extends State<DescribedFeatureOverlay>
     } else {
       final startingBackgroundPosition = anchor;
       final endingBackgroundPosition = Offset(
-          width / 2.0 + (_isOnLeftHalfOfScreen(anchor) ? -20.0 : 20.0),
+          anchor.dx + (_isOnLeftHalfOfScreen(anchor) ? -20.0 : 20.0),
           anchor.dy +
               (_isOnTopHalfOfScreen(anchor)
                   ? -(width / 2) + 40.0
@@ -516,20 +538,21 @@ class _DescribedFeatureOverlayState extends State<DescribedFeatureOverlay>
         case FeatureOverlayState.opening:
           final adjustedPercent =
               const Interval(0.0, 0.8, curve: Curves.easeOut)
-                  .transform(_transitionProgress);
+                  .transform(_transitionProgress!);
           return Offset.lerp(startingBackgroundPosition,
               endingBackgroundPosition, adjustedPercent);
         case FeatureOverlayState.completing:
           return endingBackgroundPosition;
         case FeatureOverlayState.dismissing:
           return Offset.lerp(endingBackgroundPosition,
-              startingBackgroundPosition, _transitionProgress);
+              startingBackgroundPosition, _transitionProgress!);
         case FeatureOverlayState.opened:
           return endingBackgroundPosition;
         case FeatureOverlayState.closed:
           return startingBackgroundPosition;
+        case null:
+          throw ArgumentError.notNull();
       }
-      throw ArgumentError.value(_state);
     }
   }
 
@@ -547,11 +570,11 @@ class _DescribedFeatureOverlayState extends State<DescribedFeatureOverlay>
     final contentLocation = _nonTrivialContentOrientation(anchor);
     assert(contentLocation != ContentLocation.trivial);
 
-    final backgroundCenter = _backgroundPosition(anchor, contentLocation);
+    final backgroundCenter = _backgroundPosition(anchor, contentLocation)!;
     final backgroundRadius = _backgroundRadius(anchor);
 
     final contentOffsetMultiplier = _contentOffsetMultiplier(contentLocation);
-    final contentCenterPosition = _contentCenterPosition(anchor);
+    final contentCenterPosition = _contentCenterPosition(anchor)!;
 
     final contentWidth = min(_screenSize.width, _screenSize.height);
 
@@ -562,9 +585,15 @@ class _DescribedFeatureOverlayState extends State<DescribedFeatureOverlay>
           contentOffsetMultiplier * (44 + 20), // 44 is the tap target's radius.
     );
 
-    // Will try to dismiss this overlay,
-    // then will call the bloc's dismiss function
-    // only if this overlay has been successfully dismissed.
+    Widget background = Container(
+      width: double.infinity,
+      height: double.infinity,
+      color: Colors.transparent,
+    );
+
+    /// Will try to dismiss this overlay,
+    /// then will call the bloc's dismiss function
+    /// only if this overlay has been successfully dismissed.
     void tryDismissThisThenAll() async {
       await _dismiss();
       if (_state == FeatureOverlayState.closed) {
@@ -572,18 +601,28 @@ class _DescribedFeatureOverlayState extends State<DescribedFeatureOverlay>
       }
     }
 
+    /// Will try to complete this overlay,
+    /// then will call the bloc's complete function
+    /// only if this overlay has been successfully dismissed.
+    void tryCompleteThis() async {
+      await _complete();
+      if (_state == FeatureOverlayState.closed) {
+        await _bloc.completeStep();
+      }
+    }
+
+    if (widget.barrierDismissible) {
+      background = GestureDetector(
+        onTap: tryDismissThisThenAll,
+        // According to the spec, the user should be able to dismiss by swiping.
+        onPanUpdate: (_) => tryDismissThisThenAll(),
+        child: background,
+      );
+    }
+
     return Stack(
       children: <Widget>[
-        GestureDetector(
-          onTap: tryDismissThisThenAll,
-          // According to the spec, the user should be able to dismiss by swiping.
-          onPanUpdate: (DragUpdateDetails _) => tryDismissThisThenAll(),
-          child: Container(
-            width: double.infinity,
-            height: double.infinity,
-            color: Colors.transparent,
-          ),
-        ),
+        background,
         CustomMultiChildLayout(
           delegate: BackgroundContentLayoutDelegate(
             overflowMode: widget.overflowMode,
@@ -592,24 +631,28 @@ class _DescribedFeatureOverlayState extends State<DescribedFeatureOverlay>
             backgroundRadius: backgroundRadius,
             anchor: anchor,
             contentOffsetMultiplier: contentOffsetMultiplier,
-            state: _state,
+            state: _state!,
             transitionProgress: _transitionProgress,
           ),
           children: <Widget>[
             LayoutId(
               id: BackgroundContentLayout.background,
               child: _Background(
-                transitionProgress: _transitionProgress,
+                transitionProgress: _transitionProgress!,
                 color: widget.backgroundColor ?? Theme.of(context).primaryColor,
-                state: _state,
+                defaultOpacity: widget.backgroundOpacity,
+                state: _state!,
                 overflowMode: widget.overflowMode,
+                tryDismissThisThenAll: tryDismissThisThenAll,
+                backgroundDismissible: widget.backgroundDismissible,
+                onBackgroundTap: widget.onBackgroundTap,
               ),
             ),
             LayoutId(
               id: BackgroundContentLayout.content,
               child: Content(
-                state: _state,
-                transitionProgress: _transitionProgress,
+                state: _state!,
+                transitionProgress: _transitionProgress!,
                 title: widget.title,
                 description: widget.description,
                 textColor: widget.textColor,
@@ -622,17 +665,17 @@ class _DescribedFeatureOverlayState extends State<DescribedFeatureOverlay>
           ],
         ),
         _Pulse(
-          state: _state,
-          transitionProgress: _transitionProgress,
+          state: _state!,
+          transitionProgress: _transitionProgress!,
           anchor: anchor,
           color: widget.targetColor,
         ),
         _TapTarget(
-          state: _state,
-          transitionProgress: _transitionProgress,
+          state: _state!,
+          transitionProgress: _transitionProgress!,
           anchor: anchor,
           color: widget.targetColor,
-          onPressed: () => FeatureDiscovery.completeCurrentStep(context),
+          onPressed: tryCompleteThis,
           child: widget.tapTarget,
         ),
       ],
@@ -653,40 +696,44 @@ class _Background extends StatelessWidget {
   final double transitionProgress;
   final Color color;
   final OverflowMode overflowMode;
+  final double defaultOpacity;
+  final VoidCallback tryDismissThisThenAll;
+  final bool backgroundDismissible;
+  final Future<bool> Function()? onBackgroundTap;
 
   const _Background({
-    Key key,
-    @required this.color,
-    @required this.state,
-    @required this.transitionProgress,
-    @required this.overflowMode,
-  })  : assert(color != null),
-        assert(state != null),
-        assert(transitionProgress != null),
-        super(key: key);
+    Key? key,
+    required this.color,
+    required this.state,
+    required this.transitionProgress,
+    required this.overflowMode,
+    required this.defaultOpacity,
+    required this.tryDismissThisThenAll,
+    required this.backgroundDismissible,
+    required this.onBackgroundTap,
+  }) : super(key: key);
 
   double get opacity {
     switch (state) {
       case FeatureOverlayState.opening:
         final adjustedPercent = const Interval(0.0, 0.3, curve: Curves.easeOut)
             .transform(transitionProgress);
-        return 0.96 * adjustedPercent;
+        return defaultOpacity * adjustedPercent;
 
       case FeatureOverlayState.completing:
         final adjustedPercent = const Interval(0.1, 0.6, curve: Curves.easeOut)
             .transform(transitionProgress);
 
-        return 0.96 * (1 - adjustedPercent);
+        return defaultOpacity * (1 - adjustedPercent);
       case FeatureOverlayState.dismissing:
         final adjustedPercent = const Interval(0.2, 1.0, curve: Curves.easeOut)
             .transform(transitionProgress);
-        return 0.96 * (1 - adjustedPercent);
+        return defaultOpacity * (1 - adjustedPercent);
       case FeatureOverlayState.opened:
-        return 0.96;
+        return defaultOpacity;
       case FeatureOverlayState.closed:
         return 0;
     }
-    throw ArgumentError.value(state);
   }
 
   @override
@@ -695,14 +742,39 @@ class _Background extends StatelessWidget {
       return Container();
     }
 
-    return LayoutBuilder(
-        builder: (context, constraints) => Container(
-              // The size is controlled in BackgroundContentLayoutDelegate.
-              width: constraints.biggest.width,
-              height: constraints.biggest.height,
-              decoration: BoxDecoration(
-                  shape: BoxShape.circle, color: color.withOpacity(opacity)),
-            ));
+    Widget result = LayoutBuilder(
+      builder: (context, constraints) => Container(
+        // The size is controlled in BackgroundContentLayoutDelegate.
+        width: constraints.biggest.width,
+        height: constraints.biggest.height,
+        decoration: BoxDecoration(
+            shape: BoxShape.circle, color: color.withOpacity(opacity)),
+      ),
+    );
+
+    result = GestureDetector(
+      onTap: () {
+        if (backgroundDismissible) {
+          tryDismissThisThenAll();
+        }
+
+        if (onBackgroundTap != null) {
+          onBackgroundTap!();
+        }
+      },
+      onPanUpdate: (_) {
+        if (backgroundDismissible) {
+          tryDismissThisThenAll();
+        }
+
+        if (onBackgroundTap != null) {
+          onBackgroundTap!();
+        }
+      },
+      child: result,
+    );
+
+    return result;
   }
 }
 
@@ -713,16 +785,12 @@ class _Pulse extends StatelessWidget {
   final Color color;
 
   const _Pulse({
-    Key key,
-    @required this.state,
-    @required this.transitionProgress,
-    @required this.anchor,
-    @required this.color,
-  })  : assert(state != null),
-        assert(transitionProgress != null),
-        assert(anchor != null),
-        assert(color != null),
-        super(key: key);
+    Key? key,
+    required this.state,
+    required this.transitionProgress,
+    required this.anchor,
+    required this.color,
+  }) : super(key: key);
 
   double get radius {
     switch (state) {
@@ -741,7 +809,6 @@ class _Pulse extends StatelessWidget {
       case FeatureOverlayState.closed:
         return 0;
     }
-    throw ArgumentError.value(state);
   }
 
   double get opacity {
@@ -757,7 +824,6 @@ class _Pulse extends StatelessWidget {
       case FeatureOverlayState.closed:
         return 0;
     }
-    throw ArgumentError.value(state);
   }
 
   @override
@@ -785,19 +851,14 @@ class _TapTarget extends StatelessWidget {
   final VoidCallback onPressed;
 
   const _TapTarget({
-    Key key,
-    @required this.anchor,
-    @required this.child,
-    @required this.onPressed,
-    @required this.color,
-    @required this.state,
-    @required this.transitionProgress,
-  })  : assert(anchor != null),
-        assert(child != null),
-        assert(state != null),
-        assert(transitionProgress != null),
-        assert(color != null),
-        super(key: key);
+    Key? key,
+    required this.anchor,
+    required this.child,
+    required this.onPressed,
+    required this.color,
+    required this.state,
+    required this.transitionProgress,
+  }) : super(key: key);
 
   double get opacity {
     switch (state) {
@@ -814,7 +875,6 @@ class _TapTarget extends StatelessWidget {
       case FeatureOverlayState.opened:
         return 1;
     }
-    throw ArgumentError.value(state);
   }
 
   double get radius {
@@ -837,7 +897,6 @@ class _TapTarget extends StatelessWidget {
       case FeatureOverlayState.dismissing:
         return 20 + 12 * (1 - transitionProgress);
     }
-    throw ArgumentError.value(state);
   }
 
   @override

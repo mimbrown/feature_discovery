@@ -26,16 +26,17 @@ class MyApp extends StatelessWidget {
           primarySwatch: Colors.blue,
         ),
         // Required: this widget works like an inherited widget.
-        home: const FeatureDiscovery(
+        home: const FeatureDiscovery.withProvider(
+          persistenceProvider: NoPersistenceProvider(),
           child: MyHomePage(title: 'Flutter Feature Discovery'),
         ),
       );
 }
 
 class MyHomePage extends StatefulWidget {
-  const MyHomePage({Key key, this.title}) : super(key: key);
+  const MyHomePage({Key? key, this.title}) : super(key: key);
 
-  final String title;
+  final String? title;
 
   @override
   _MyHomePageState createState() => _MyHomePageState();
@@ -60,7 +61,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.title),
+        title: Text(widget.title!),
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(80),
           child: Column(
@@ -102,30 +103,32 @@ class _MyHomePageState extends State<MyHomePage> {
               children: <Widget>[
                 const Text(
                     'Also, notice how the pulsing animation is not playing because it is deactivated for this feature.'),
-                FlatButton(
-                    child: Text('Toggle enablePulsingAnimation',
-                        style: Theme.of(context)
-                            .textTheme
-                            .button
-                            .copyWith(color: Colors.white)),
-                    onPressed: () => setState(() {
-                          feature1EnablePulsingAnimation =
-                              !feature1EnablePulsingAnimation;
-                        })),
+                TextButton(
+                  onPressed: () => setState(() {
+                    feature1EnablePulsingAnimation =
+                        !feature1EnablePulsingAnimation;
+                  }),
+                  child: Text('Toggle enablePulsingAnimation',
+                      style: Theme.of(context)
+                          .textTheme
+                          .button!
+                          .copyWith(color: Colors.white)),
+                ),
                 const Text(
                     'Ignore the items below or tap the button to toggle between OverflowMode.clip and OverflowMode.doNothing!'),
-                FlatButton(
-                    child: Text('Toggle overflowMode',
-                        style: Theme.of(context)
-                            .textTheme
-                            .button
-                            .copyWith(color: Colors.white)),
-                    onPressed: () => setState(() {
-                          feature1OverflowMode =
-                              feature1OverflowMode == OverflowMode.clipContent
-                                  ? OverflowMode.ignore
-                                  : OverflowMode.clipContent;
-                        })),
+                TextButton(
+                  onPressed: () => setState(() {
+                    feature1OverflowMode =
+                        feature1OverflowMode == OverflowMode.clipContent
+                            ? OverflowMode.ignore
+                            : OverflowMode.clipContent;
+                  }),
+                  child: Text('Toggle overflowMode',
+                      style: Theme.of(context)
+                          .textTheme
+                          .button!
+                          .copyWith(color: Colors.white)),
+                ),
                 for (int n = 42; n > 0; n--)
                   const Text('Testing clipping (ignore or toggle)',
                       style: TextStyle(backgroundColor: Colors.black)),
@@ -148,24 +151,26 @@ class _MyHomePageState extends State<MyHomePage> {
               children: <Widget>[
                 const Text(
                     'Tap the magnifying glass to quickly scan your compounds'),
-                FlatButton(
-                  padding: const EdgeInsets.all(0),
-                  child: Text('Understood',
-                      style: Theme.of(context)
-                          .textTheme
-                          .button
-                          .copyWith(color: Colors.white)),
+                TextButton(
                   onPressed: () async =>
                       FeatureDiscovery.completeCurrentStep(context),
+                  child: Text(
+                    'Understood',
+                    style: Theme.of(context)
+                        .textTheme
+                        .button!
+                        .copyWith(color: Colors.white),
+                  ),
                 ),
-                FlatButton(
-                  padding: const EdgeInsets.all(0),
-                  child: Text('Dismiss',
-                      style: Theme.of(context)
-                          .textTheme
-                          .button
-                          .copyWith(color: Colors.white)),
+                TextButton(
                   onPressed: () => FeatureDiscovery.dismissAll(context),
+                  child: Text(
+                    'Dismiss',
+                    style: Theme.of(context)
+                        .textTheme
+                        .button!
+                        .copyWith(color: Colors.white),
+                  ),
                 ),
               ],
             ),
@@ -189,15 +194,16 @@ class _MyHomePageState extends State<MyHomePage> {
           description: Column(children: <Widget>[
             const Text(
                 'This is overly long to test OverflowMode.extendBackground. The green circle should be large enough to cover all of the text.'),
-            FlatButton(
-                child: Text('Add another item',
-                    style: Theme.of(context)
-                        .textTheme
-                        .button
-                        .copyWith(color: Colors.white)),
-                onPressed: () => setState(() {
-                      feature3ItemCount++;
-                    })),
+            TextButton(
+              onPressed: () => setState(() {
+                feature3ItemCount++;
+              }),
+              child: Text('Add another item',
+                  style: Theme.of(context)
+                      .textTheme
+                      .button!
+                      .copyWith(color: Colors.white)),
+            ),
             for (int n = feature3ItemCount; n > 0; n--)
               const Text('Testing OverflowMode.extendBackground'),
           ]),
@@ -213,22 +219,22 @@ class _MyHomePageState extends State<MyHomePage> {
 }
 
 class Content extends StatefulWidget {
-  const Content({Key key}) : super(key: key);
+  const Content({Key? key}) : super(key: key);
 
   @override
   _ContentState createState() => _ContentState();
 }
 
 class _ContentState extends State<Content> {
-  GlobalKey<EnsureVisibleState> ensureKey;
-  GlobalKey<EnsureVisibleState> ensureKey2;
+  GlobalKey<EnsureVisibleState>? ensureKey;
+  GlobalKey<EnsureVisibleState>? ensureKey2;
 
   @override
   void initState() {
     ensureKey = GlobalKey<EnsureVisibleState>();
     ensureKey2 = GlobalKey<EnsureVisibleState>();
 
-    WidgetsBinding.instance.addPostFrameCallback((_) {
+    WidgetsBinding.instance!.addPostFrameCallback((_) {
       FeatureDiscovery.discoverFeatures(
         context,
         const <String>{
@@ -264,20 +270,6 @@ class _ContentState extends State<Content> {
                 width: double.infinity,
                 child: const Text(
                     'Imagine there would be a beautiful picture here.'),
-              ),
-              RaisedButton.icon(
-                onPressed: () {
-                  FeatureDiscovery.clearPreferences(context, const <String>{
-                    feature1,
-                    feature2,
-                    feature3,
-                    feature4,
-                    feature6,
-                    feature5
-                  });
-                },
-                icon: Icon(Icons.clear),
-                label: const Text('Reset Preferences'),
               ),
               Container(
                 width: double.infinity,
@@ -322,8 +314,8 @@ class _ContentState extends State<Content> {
                     return true;
                   },
                   onOpen: () async {
-                    WidgetsBinding.instance.addPostFrameCallback((_) {
-                      ensureKey.currentState.ensureVisible(
+                    WidgetsBinding.instance!.addPostFrameCallback((_) {
+                      ensureKey!.currentState!.ensureVisible(
                         preciseAlignment: 0.5,
                         duration: const Duration(milliseconds: 400),
                       );
@@ -336,8 +328,7 @@ class _ContentState extends State<Content> {
                   contentLocation: ContentLocation.below,
                   child: EnsureVisible(
                     key: ensureKey,
-                    child: RaisedButton(
-                      child: const Text('Start Feature Discovery'),
+                    child: ElevatedButton(
                       onPressed: () {
                         FeatureDiscovery.discoverFeatures(
                           context,
@@ -351,6 +342,7 @@ class _ContentState extends State<Content> {
                           },
                         );
                       },
+                      child: const Text('Start Feature Discovery'),
                     ),
                   ),
                 ),
@@ -363,6 +355,7 @@ class _ContentState extends State<Content> {
                 builder: (BuildContext context,
                         void Function(void Function()) setState) =>
                     DescribedFeatureOverlay(
+                  barrierDismissible: false,
                   featureId: feature6,
                   tapTarget: const Icon(Icons.drive_eta),
                   backgroundColor: Colors.green,
@@ -371,8 +364,8 @@ class _ContentState extends State<Content> {
                     return true;
                   },
                   onOpen: () async {
-                    WidgetsBinding.instance.addPostFrameCallback((_) {
-                      ensureKey2.currentState.ensureVisible(
+                    WidgetsBinding.instance!.addPostFrameCallback((_) {
+                      ensureKey2!.currentState!.ensureVisible(
                           duration: const Duration(milliseconds: 600));
                     });
                     return true;
@@ -380,16 +373,16 @@ class _ContentState extends State<Content> {
                   description: Column(children: <Widget>[
                     const Text(
                         'You can test OverflowMode.wrapBackground here.'),
-                    FlatButton(
-                        padding: const EdgeInsets.all(0),
-                        child: Text('Add item',
-                            style: Theme.of(context)
-                                .textTheme
-                                .button
-                                .copyWith(color: Colors.white)),
-                        onPressed: () => setState(() {
-                              feature6ItemCount++;
-                            })),
+                    TextButton(
+                      onPressed: () => setState(() {
+                        feature6ItemCount++;
+                      }),
+                      child: Text('Add item',
+                          style: Theme.of(context)
+                              .textTheme
+                              .button!
+                              .copyWith(color: Colors.white)),
+                    ),
                     for (int n = feature6ItemCount; n > 0; n--)
                       const Text('Testing OverflowMode.wrapBackground'),
                   ]),
@@ -428,10 +421,10 @@ class _ContentState extends State<Content> {
               child: FloatingActionButton(
                 backgroundColor: Colors.white,
                 foregroundColor: Colors.blue,
-                child: const Icon(Icons.drive_eta),
                 onPressed: () {
                   print('Floating action button tapped.');
                 },
+                child: const Icon(Icons.drive_eta),
               ),
             ),
           ),
