@@ -90,7 +90,7 @@ class _OverlayBuilderState extends State<OverlayBuilder> {
       builder: (context) {
         return Directionality(
           textDirection: TextDirection.rtl,
-          child: widget.overlayBuilder(context),
+          child: widget.overlayBuilder!(context),
         );
       },
     );
