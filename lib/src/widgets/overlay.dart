@@ -464,6 +464,7 @@ class _DescribedFeatureOverlayState extends State<DescribedFeatureOverlay>
       switch (contentLocation) {
         case ContentLocation.above:
           endingBackgroundPosition = Offset(
+            anchor.dx == width / 2 ? anchor.dx :
               anchor.dx -
                   width / 2.0 +
                   (_isOnLeftHalfOfScreen(anchor) ? -20.0 : 20.0),
@@ -471,6 +472,7 @@ class _DescribedFeatureOverlayState extends State<DescribedFeatureOverlay>
           break;
         case ContentLocation.below:
           endingBackgroundPosition = Offset(
+            anchor.dx == width / 2 ? anchor.dx :
               anchor.dx -
                   width / 2.0 +
                   (_isOnLeftHalfOfScreen(anchor) ? -20.0 : 20.0),

@@ -87,12 +87,11 @@ class _OverlayBuilderState extends State<OverlayBuilder> {
 
   void showOverlay() {
     overlayEntry = OverlayEntry(
-      builder: (context) {
-        return Directionality(
+      builder: (context) =>
+        Directionality(
           textDirection: TextDirection.rtl,
           child: widget.overlayBuilder!(context),
-        );
-      },
+        ),
     );
     WidgetsBinding.instance!.addPostFrameCallback((_) {
       Overlay.of(context)!.insert(overlayEntry!);
