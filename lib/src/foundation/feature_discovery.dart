@@ -118,7 +118,7 @@ class FeatureDiscovery extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => BlocProvider(
-        child: child,
         persistenceProvider: persistenceProvider,
+        child: child,
       );
 }
