@@ -1,6 +1,6 @@
 import 'package:feature_discovery/feature_discovery.dart';
-import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:material_ui/material_ui.dart';
 
 import 'widgets.dart';
 
@@ -24,7 +24,9 @@ void main() {
       expect(finder, findsNWidgets(steps.length));
       final context = tester.firstState(finder).context;
       // Should be no overlays before calling discoverFeatures
-      texts.forEach((t) => expect(find.text(t), findsNothing));
+      for (final t in texts) {
+        expect(find.text(t), findsNothing);
+      }
       FeatureDiscovery.discoverFeatures(context, steps);
       await tester.pumpAndSettle();
       // First overlay should appear
@@ -44,7 +46,9 @@ void main() {
       FeatureDiscovery.dismissAll(context);
       await tester.pumpAndSettle();
       // No overlay should remain
-      texts.forEach((t) => expect(find.text(t), findsNothing));
+      for (final t in texts) {
+        expect(find.text(t), findsNothing);
+      }
     });
   });
 
@@ -74,7 +78,9 @@ void main() {
         await FeatureDiscovery.completeCurrentStep(context);
         await tester.pumpAndSettle();
         // No overlay should remain on screen
-        texts.forEach((t) => expect(find.text(t), findsNothing));
+        for (final t in texts) {
+          expect(find.text(t), findsNothing);
+        }
       },
     );
   });
@@ -104,7 +110,9 @@ void main() {
         final finder = find.byType(TestIcon);
         expect(finder, findsNWidgets(featureIds.length));
         final context = tester.firstState(finder).context;
-        texts.forEach((t) => expect(find.text(t), findsNothing));
+        for (final t in texts) {
+          expect(find.text(t), findsNothing);
+        }
 
         FeatureDiscovery.discoverFeatures(context, steps);
         await tester.pumpAndSettle();

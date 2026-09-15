@@ -8,7 +8,7 @@ class TestWrapper extends StatelessWidget {
   /// This will be passed to [Scaffold.body].
   final Widget? child;
 
-  const TestWrapper({Key? key, this.child}) : super(key: key);
+  const TestWrapper({super.key, this.child});
 
   @override
   Widget build(_) => FeatureDiscovery.withProvider(
@@ -29,10 +29,10 @@ class TestWidget extends StatelessWidget {
   final bool allowShowingDuplicate;
 
   const TestWidget({
-    Key? key,
+    super.key,
     required this.featureIds,
     this.allowShowingDuplicate = false,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) => TestWrapper(
@@ -57,10 +57,10 @@ class TestIcon extends StatefulWidget {
   final bool allowShowingDuplicate;
 
   const TestIcon({
-    Key? key,
+    super.key,
     required this.featureId,
     required this.allowShowingDuplicate,
-  }) : super(key: key);
+  });
 
   @override
   TestIconState createState() => TestIconState();
@@ -78,10 +78,10 @@ class TestIconState extends State<TestIcon> {
       // Otherwise, the tester can never settle as it requires frame sync.
       enablePulsingAnimation: false,
       allowShowingDuplicate: widget.allowShowingDuplicate,
-      child: icon,
       tapTarget: icon,
       title: const Text('This is it'),
       description: Text('Test has passed for ${widget.featureId}'),
+      child: icon,
     );
   }
 }
@@ -102,13 +102,13 @@ class OverflowingDescriptionFeature extends StatelessWidget {
   final OverflowMode? mode;
 
   const OverflowingDescriptionFeature({
-    Key? key,
+    super.key,
     this.onContext,
     this.featureId,
     this.icon,
     this.mode,
     this.onDismiss,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(_) => TestWrapper(
@@ -138,7 +138,7 @@ class OverflowingDescriptionFeature extends StatelessWidget {
                 child: Container(
                   width: 1e2,
                   height: 1e2,
-                  color: const Color(0xfffffff),
+                  color: const Color(0x0fffffff),
                 ),
               ),
             ),
@@ -164,12 +164,12 @@ class WidgetWithDisposableFeature extends StatefulWidget {
   final String staticFeatureTitle, disposableFeatureTitle;
 
   const WidgetWithDisposableFeature({
-    Key? key,
+    super.key,
     required this.featureId,
     required this.featureIcon,
     required this.staticFeatureTitle,
     required this.disposableFeatureTitle,
-  }) : super(key: key);
+  });
 
   @override
   State createState() => WidgetWithDisposableFeatureState();

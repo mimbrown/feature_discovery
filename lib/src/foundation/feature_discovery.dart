@@ -19,8 +19,7 @@ class FeatureDiscovery extends StatelessWidget {
       return Bloc.of(context);
     } on BlocNotFoundError catch (e) {
       throw FlutterError(
-        e.message +
-            '\nEnsure that it also wraps the context of the ${context.widget.runtimeType} widget from which you have called a static method in FeatureDiscovery.',
+        '${e.message}\nEnsure that it also wraps the context of the ${context.widget.runtimeType} widget from which you have called a static method in FeatureDiscovery.',
       );
     }
   }
@@ -82,8 +81,8 @@ class FeatureDiscovery extends StatelessWidget {
   const FeatureDiscovery.withProvider({
     required this.child,
     required this.persistenceProvider,
-    Key? key,
-  }) : super(key: key);
+    super.key,
+  });
 
   /// Instantiates a new [FeatureDiscovery].
   ///
@@ -115,5 +114,5 @@ class FeatureDiscovery extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) =>
-      BlocProvider(child: child, persistenceProvider: persistenceProvider);
+      BlocProvider(persistenceProvider: persistenceProvider, child: child);
 }

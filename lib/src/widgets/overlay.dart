@@ -138,7 +138,7 @@ class DescribedFeatureOverlay extends StatefulWidget {
   final Future<bool> Function()? onBackgroundTap;
 
   const DescribedFeatureOverlay({
-    Key? key,
+    super.key,
     required this.featureId,
     required this.tapTarget,
     this.backgroundColor,
@@ -166,8 +166,7 @@ class DescribedFeatureOverlay extends StatefulWidget {
          barrierDismissible == true || onDismiss == null,
          'Cannot provide both a barrierDismissible and onDismiss function\n'
          'The onDismiss function will never get executed when barrierDismissible is set to false.',
-       ),
-       super(key: key);
+       );
 
   @override
   _DescribedFeatureOverlayState createState() =>
@@ -246,7 +245,7 @@ class _DescribedFeatureOverlayState extends State<DescribedFeatureOverlay>
         _open();
     } on BlocNotFoundError catch (e) {
       throw FlutterError(
-        e.message + '\nEnsure that all the DescribedFeatureOverlay widgets are below it.',
+        '${e.message}\nEnsure that all the DescribedFeatureOverlay widgets are below it.',
       );
     }
 
@@ -301,8 +300,6 @@ class _DescribedFeatureOverlayState extends State<DescribedFeatureOverlay>
             return;
           await _completeOrDismiss(event, force: true);
           break;
-        default:
-          throw ArgumentError.value(event);
       }
     });
   }
@@ -735,7 +732,6 @@ class _Background extends StatelessWidget {
   final Future<bool> Function()? onBackgroundTap;
 
   const _Background({
-    Key? key,
     required this.color,
     required this.state,
     required this.transitionProgress,
@@ -744,7 +740,7 @@ class _Background extends StatelessWidget {
     required this.tryDismissThisThenAll,
     required this.backgroundDismissible,
     required this.onBackgroundTap,
-  }) : super(key: key);
+  });
 
   double get opacity {
     switch (state) {
@@ -829,12 +825,11 @@ class _Pulse extends StatelessWidget {
   final Color color;
 
   const _Pulse({
-    Key? key,
     required this.state,
     required this.transitionProgress,
     required this.anchor,
     required this.color,
-  }) : super(key: key);
+  });
 
   double get radius {
     switch (state) {
@@ -895,14 +890,13 @@ class _TapTarget extends StatelessWidget {
   final VoidCallback onPressed;
 
   const _TapTarget({
-    Key? key,
     required this.anchor,
     required this.child,
     required this.onPressed,
     required this.color,
     required this.state,
     required this.transitionProgress,
-  }) : super(key: key);
+  });
 
   double get opacity {
     switch (state) {
@@ -952,7 +946,7 @@ class _TapTarget extends StatelessWidget {
   @override
   Widget build(BuildContext context) => CenterAbout(
     position: anchor,
-    child: Container(
+    child: SizedBox(
       height: 2 * radius,
       width: 2 * radius,
       child: Opacity(
@@ -960,8 +954,8 @@ class _TapTarget extends StatelessWidget {
         child: RawMaterialButton(
           fillColor: color,
           shape: const CircleBorder(),
-          child: child,
           onPressed: onPressed,
+          child: child,
         ),
       ),
     ),

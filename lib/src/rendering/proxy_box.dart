@@ -6,9 +6,10 @@ class RenderClipContent extends RenderProxyBox {
   Offset? _center;
   double? _radius;
 
-  RenderClipContent({required Offset center, required double radius})
-    : _center = center,
-      _radius = radius;
+  RenderClipContent({
+    required Offset this._center,
+    required double this._radius,
+  });
 
   /// The inner area of the DescribedFeatureOverlay.
   Path get innerCircle => Path()

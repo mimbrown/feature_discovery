@@ -1,4 +1,4 @@
-library feature_discovery;
+library;
 
 // The library files (foundation.dart, widgets.dart, etc.) are in src
 // because they should not appear for code completion because the

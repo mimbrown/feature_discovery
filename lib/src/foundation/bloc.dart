@@ -10,10 +10,10 @@ class BlocProvider extends StatelessWidget {
   final PersistenceProvider persistenceProvider;
 
   const BlocProvider({
-    Key? key,
+    super.key,
     required this.child,
     required this.persistenceProvider,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) => Provider<Bloc>(

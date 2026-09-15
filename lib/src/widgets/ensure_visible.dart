@@ -1,11 +1,11 @@
-import 'package:material_ui/material_ui.dart';
 import 'package:flutter/rendering.dart';
+import 'package:material_ui/material_ui.dart';
 
 class EnsureVisible extends StatefulWidget {
   /// The child widget that we are wrapping
   final Widget child;
 
-  const EnsureVisible({Key? key, required this.child}) : super(key: key);
+  const EnsureVisible({super.key, required this.child});
 
   @override
   EnsureVisibleState createState() => EnsureVisibleState();

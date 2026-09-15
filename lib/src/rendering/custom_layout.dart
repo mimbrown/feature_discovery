@@ -145,9 +145,6 @@ class BackgroundContentLayoutDelegate extends MultiChildLayoutDelegate {
       case FeatureOverlayState.closed:
         matchedRadius = 0;
         break;
-      default:
-        // The switch statement should be exhaustive.
-        throw ArgumentError.value(state);
     }
 
     layoutChild(
