@@ -6,18 +6,15 @@ class RenderClipContent extends RenderProxyBox {
   Offset? _center;
   double? _radius;
 
-  RenderClipContent({
-    required Offset center,
-    required double radius,
-  })   : _center = center,
-        _radius = radius;
+  RenderClipContent({required Offset center, required double radius})
+    : _center = center,
+      _radius = radius;
 
   /// The inner area of the DescribedFeatureOverlay.
   Path get innerCircle => Path()
-    ..addOval(Rect.fromCircle(
-      center: globalToLocal(_center!),
-      radius: _radius!,
-    ));
+    ..addOval(
+      Rect.fromCircle(center: globalToLocal(_center!), radius: _radius!),
+    );
 
   set center(Offset? center) {
     _center = center;
@@ -49,7 +46,12 @@ class RenderClipContent extends RenderProxyBox {
 
   @override
   void paint(PaintingContext context, Offset offset) {
-    context.pushClipPath(needsCompositing, offset,
-        Rect.fromLTWH(0, 0, size.width, size.height), innerCircle, super.paint);
+    context.pushClipPath(
+      needsCompositing,
+      offset,
+      Rect.fromLTWH(0, 0, size.width, size.height),
+      innerCircle,
+      super.paint,
+    );
   }
 }

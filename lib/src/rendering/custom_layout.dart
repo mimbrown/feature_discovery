@@ -4,10 +4,7 @@ import 'package:feature_discovery/src/widgets.dart';
 import 'package:flutter/animation.dart';
 import 'package:flutter/rendering.dart';
 
-enum BackgroundContentLayout {
-  background,
-  content,
-}
+enum BackgroundContentLayout { background, content }
 
 class BackgroundContentLayoutDelegate extends MultiChildLayoutDelegate {
   /// This padding is applied to the calculated radius of the background
@@ -54,8 +51,10 @@ class BackgroundContentLayoutDelegate extends MultiChildLayoutDelegate {
     assert(hasChild(BackgroundContentLayout.background));
     assert(hasChild(BackgroundContentLayout.content));
 
-    final contentSize =
-        layoutChild(BackgroundContentLayout.content, const BoxConstraints());
+    final contentSize = layoutChild(
+      BackgroundContentLayout.content,
+      const BoxConstraints(),
+    );
 
     // Do calculations regarding the sizing of the background.
     final backgroundPoint = Point(backgroundCenter.dx, backgroundCenter.dy),
@@ -79,34 +78,44 @@ class BackgroundContentLayoutDelegate extends MultiChildLayoutDelegate {
       final distanceToOuterPulse = anchorPoint.distanceTo(backgroundPoint) + 75;
 
       // Calculate distance to the furthest point of the content.
-      final contentArea = Rect.fromLTWH(contentPoint.x, contentPoint.y,
-          contentSize.width, contentSize.height);
+      final contentArea = Rect.fromLTWH(
+        contentPoint.x,
+        contentPoint.y,
+        contentSize.width,
+        contentSize.height,
+      );
       // This is equal to finding the max out of the distances to the corners of the Rect.
       // It is just the more Math-esque approach.
       // See the commented out code below for an intuitive approach.
-      final contentDx = max((contentArea.left - backgroundPoint.x).abs(),
-              (contentArea.right - backgroundPoint.x)),
-          contentDy = max((contentArea.top - backgroundPoint.y).abs(),
-              (contentArea.bottom - backgroundPoint.y).abs());
-//    // We take the corners of the content because these are the furthest away in every scenario.
-//    final List<Point> contentAreaCorners = <Offset>[
-//      contentArea.topRight,
-//      contentArea.topLeft,
-//      contentArea.bottomLeft,
-//      contentArea.bottomRight
-//    ].map<Point>((offset) => Point(offset.dx, offset.dy)).toList();
-//
-//    final double distanceToOuterContent = contentAreaCorners
-//        .map<double>((point) => point.distanceTo(backgroundPoint))
-//        .reduce(max);
-      final distanceToOuterContent =
-          sqrt(contentDx * contentDx + contentDy * contentDy);
+      final contentDx = max(
+            (contentArea.left - backgroundPoint.x).abs(),
+            (contentArea.right - backgroundPoint.x),
+          ),
+          contentDy = max(
+            (contentArea.top - backgroundPoint.y).abs(),
+            (contentArea.bottom - backgroundPoint.y).abs(),
+          );
+      //    // We take the corners of the content because these are the furthest away in every scenario.
+      //    final List<Point> contentAreaCorners = <Offset>[
+      //      contentArea.topRight,
+      //      contentArea.topLeft,
+      //      contentArea.bottomLeft,
+      //      contentArea.bottomRight
+      //    ].map<Point>((offset) => Point(offset.dx, offset.dy)).toList();
+      //
+      //    final double distanceToOuterContent = contentAreaCorners
+      //        .map<double>((point) => point.distanceTo(backgroundPoint))
+      //        .reduce(max);
+      final distanceToOuterContent = sqrt(
+        contentDx * contentDx + contentDy * contentDy,
+      );
 
       final calculatedRadius =
           max(distanceToOuterContent, distanceToOuterPulse) +
-              outerContentPadding;
+          outerContentPadding;
 
-      matchedRadius = (calculatedRadius > backgroundRadius &&
+      matchedRadius =
+          (calculatedRadius > backgroundRadius &&
                   (overflowMode == OverflowMode.extendBackground ||
                       overflowMode == OverflowMode.wrapBackground)) ||
               (calculatedRadius < backgroundRadius &&
@@ -119,8 +128,11 @@ class BackgroundContentLayoutDelegate extends MultiChildLayoutDelegate {
     // state and transition progress.
     switch (state) {
       case FeatureOverlayState.opening:
-        matchedRadius *= const Interval(0, 0.8, curve: Curves.easeOut)
-            .transform(transitionProgress!);
+        matchedRadius *= const Interval(
+          0,
+          0.8,
+          curve: Curves.easeOut,
+        ).transform(transitionProgress!);
         break;
       case FeatureOverlayState.completing:
         matchedRadius += transitionProgress! * 40;
@@ -139,27 +151,23 @@ class BackgroundContentLayoutDelegate extends MultiChildLayoutDelegate {
     }
 
     layoutChild(
-        BackgroundContentLayout.background,
-        BoxConstraints.loose(Size(
-          matchedRadius * 2,
-          matchedRadius * 2,
-        )));
+      BackgroundContentLayout.background,
+      BoxConstraints.loose(Size(matchedRadius * 2, matchedRadius * 2)),
+    );
 
     // Positioning does not give us any information to work with,
     // so we can do it at the end. The order does not matter either.
     positionChild(
       BackgroundContentLayout.content,
-      Offset(
-        contentPoint.x,
-        contentPoint.y,
-      ),
+      Offset(contentPoint.x, contentPoint.y),
     );
     positionChild(
-        BackgroundContentLayout.background,
-        Offset(
-          backgroundCenter.dx - matchedRadius,
-          backgroundCenter.dy - matchedRadius,
-        ));
+      BackgroundContentLayout.background,
+      Offset(
+        backgroundCenter.dx - matchedRadius,
+        backgroundCenter.dy - matchedRadius,
+      ),
+    );
   }
 
   @override

@@ -32,7 +32,7 @@ class SharedPreferencesProvider implements PersistenceProvider {
   /// to the different methods. If [sharedPrefsPrefix] is not provided, the step
   /// identifiers will be used as-is.
   const SharedPreferencesProvider([String? sharedPrefsPrefix])
-      : sharedPrefsPrefix = sharedPrefsPrefix ?? '';
+    : sharedPrefsPrefix = sharedPrefsPrefix ?? '';
 
   /// Use this string a prefix for all steps identifiers.
   final String sharedPrefsPrefix;
@@ -48,8 +48,9 @@ class SharedPreferencesProvider implements PersistenceProvider {
   Future<Set<String?>> completedSteps(Iterable<String?>? featuresIds) async {
     final prefs = await SharedPreferences.getInstance();
     return featuresIds!
-        .where((featureId) =>
-            prefs.getBool(_normalizeFeatureId(featureId)) == true)
+        .where(
+          (featureId) => prefs.getBool(_normalizeFeatureId(featureId)) == true,
+        )
         .toSet();
   }
 
@@ -69,8 +70,9 @@ class SharedPreferencesProvider implements PersistenceProvider {
   Future<void> clearSteps(Iterable<String> featuresIds) async {
     final prefs = await SharedPreferences.getInstance();
 
-    final mapResult = featuresIds.map<Future>((featureId) async =>
-        await prefs.remove(_normalizeFeatureId(featureId)));
+    final mapResult = featuresIds.map<Future>(
+      (featureId) async => await prefs.remove(_normalizeFeatureId(featureId)),
+    );
     await Future.wait(mapResult);
   }
 

@@ -1,5 +1,5 @@
 import 'package:feature_discovery/src/foundation.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 import 'persistence_provider.dart';
 
@@ -11,19 +11,17 @@ import 'persistence_provider.dart';
 ///    Make sure to test this for every overlay because the trivial positioning can fail sometimes.
 ///  * [above], which will layout the content above the tap target.
 ///  * [below], which will layout the content below the tap target.
-enum ContentLocation {
-  above,
-  below,
-  trivial,
-}
+enum ContentLocation { above, below, trivial }
 
 class FeatureDiscovery extends StatelessWidget {
   static Bloc _blocOf(BuildContext context) {
     try {
       return Bloc.of(context);
     } on BlocNotFoundError catch (e) {
-      throw FlutterError(e.message +
-          '\nEnsure that it also wraps the context of the ${context.widget.runtimeType} widget from which you have called a static method in FeatureDiscovery.');
+      throw FlutterError(
+        e.message +
+            '\nEnsure that it also wraps the context of the ${context.widget.runtimeType} widget from which you have called a static method in FeatureDiscovery.',
+      );
     }
   }
 
@@ -46,12 +44,12 @@ class FeatureDiscovery extends StatelessWidget {
   static Future<bool> hasPreviouslyCompleted(
     BuildContext context,
     String featureId,
-  ) =>
-      _blocOf(context).hasPreviouslyCompleted(featureId);
+  ) => _blocOf(context).hasPreviouslyCompleted(featureId);
 
   static Future<void> clearPreferences(
-          BuildContext context, Iterable<String> steps) =>
-      _blocOf(context).clearPreferences(steps);
+    BuildContext context,
+    Iterable<String> steps,
+  ) => _blocOf(context).clearPreferences(steps);
 
   /// A method to dismiss all steps.
   ///
@@ -107,18 +105,15 @@ class FeatureDiscovery extends StatelessWidget {
     bool recordStepsInSharedPreferences = true,
     String? sharedPreferencesPrefix,
     Key? key,
-  }) =>
-      FeatureDiscovery.withProvider(
-        key: key,
-        persistenceProvider: recordStepsInSharedPreferences == true
-            ? SharedPreferencesProvider(sharedPreferencesPrefix)
-            : const NoPersistenceProvider(),
-        child: child,
-      );
+  }) => FeatureDiscovery.withProvider(
+    key: key,
+    persistenceProvider: recordStepsInSharedPreferences == true
+        ? SharedPreferencesProvider(sharedPreferencesPrefix)
+        : const NoPersistenceProvider(),
+    child: child,
+  );
 
   @override
-  Widget build(BuildContext context) => BlocProvider(
-        child: child,
-        persistenceProvider: persistenceProvider,
-      );
+  Widget build(BuildContext context) =>
+      BlocProvider(child: child, persistenceProvider: persistenceProvider);
 }

@@ -1,4 +1,12 @@
 # Changelog
+## 0.15.0
+* Migrated to `package:material_ui` (Flutter 3.47 Material decoupling); requires Flutter >=3.47.0.
+* Replaced deprecated `Color.withOpacity` with `withValues`.
+
+## 0.14.2
+* Updated All Dependencies versions
+* Updated To Flutter version 3.24.3
+# Changelog
 ## 0.14.1
 * Updated Provider version
 

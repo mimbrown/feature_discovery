@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter/rendering.dart';
 
 class EnsureVisible extends StatefulWidget {
@@ -36,14 +36,15 @@ class EnsureVisibleState extends State<EnsureVisible> {
     double? preciseAlignment,
   }) async {
     assert(
-        preciseAlignment == null ||
-            (preciseAlignment > 0 && preciseAlignment < 1),
-        'The alignment needs to be null or between 0 and 1.');
+      preciseAlignment == null ||
+          (preciseAlignment > 0 && preciseAlignment < 1),
+      'The alignment needs to be null or between 0 and 1.',
+    );
 
     final renderObject = context.findRenderObject();
-    final viewport = RenderAbstractViewport.of(renderObject)!;
+    final viewport = RenderAbstractViewport.of(renderObject);
 
-    final scrollableState = Scrollable.of(context)!;
+    final scrollableState = Scrollable.of(context);
 
     final position = scrollableState.position;
     double alignment;

@@ -1,7 +1,6 @@
 import 'package:feature_discovery/src/rendering.dart';
 import 'package:feature_discovery/src/widgets.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
+import 'package:material_ui/material_ui.dart';
 
 class Content extends StatelessWidget {
   final FeatureOverlayState state;
@@ -39,13 +38,19 @@ class Content extends StatelessWidget {
       case FeatureOverlayState.closed:
         return 0;
       case FeatureOverlayState.opening:
-        final adjustedPercent = const Interval(0.6, 1, curve: Curves.easeOut)
-            .transform(transitionProgress);
+        final adjustedPercent = const Interval(
+          0.6,
+          1,
+          curve: Curves.easeOut,
+        ).transform(transitionProgress);
         return adjustedPercent;
       case FeatureOverlayState.completing:
       case FeatureOverlayState.dismissing:
-        final adjustedPercent = const Interval(0, 0.4, curve: Curves.easeOut)
-            .transform(transitionProgress);
+        final adjustedPercent = const Interval(
+          0,
+          0.4,
+          curve: Curves.easeOut,
+        ).transform(transitionProgress);
         return 1 - adjustedPercent;
       case FeatureOverlayState.opened:
         return 1;
@@ -57,10 +62,7 @@ class Content extends StatelessWidget {
     Widget result = Opacity(
       opacity: opacity,
       child: ConstrainedBox(
-        constraints: BoxConstraints.loose(Size(
-          width,
-          double.infinity,
-        )),
+        constraints: BoxConstraints.loose(Size(width, double.infinity)),
         child: Material(
           color: Colors.transparent,
           child: Padding(
@@ -70,9 +72,7 @@ class Content extends StatelessWidget {
               children: <Widget>[
                 if (title != null)
                   DefaultTextStyle(
-                    style: Theme.of(context)
-                        .textTheme
-                        .headlineMedium!
+                    style: Theme.of(context).textTheme.headlineMedium!
                         .copyWith(color: textColor),
                     child: title!,
                   ),
@@ -80,12 +80,12 @@ class Content extends StatelessWidget {
                   const SizedBox(height: 8.0),
                 if (description != null)
                   DefaultTextStyle(
-                    style: Theme.of(context)
-                        .textTheme
-                        .bodyMedium!
-                        .copyWith(color: textColor.withOpacity(0.9), fontSize: 18),
+                    style: Theme.of(context).textTheme.bodyMedium!.copyWith(
+                      color: textColor.withValues(alpha: 0.9),
+                      fontSize: 18,
+                    ),
                     child: description!,
-                  )
+                  ),
               ],
             ),
           ),
@@ -131,7 +131,9 @@ class _ClipContent extends SingleChildRenderObjectWidget {
 
   @override
   void updateRenderObject(
-      BuildContext context, RenderClipContent renderObject) {
+    BuildContext context,
+    RenderClipContent renderObject,
+  ) {
     renderObject
       ..center = backgroundCenter
       ..radius = backgroundRadius;

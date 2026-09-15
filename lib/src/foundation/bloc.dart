@@ -17,12 +17,11 @@ class BlocProvider extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Provider<Bloc>(
-        child: child,
-        create: (BuildContext context) => Bloc._(
-          persistenceProvider: persistenceProvider,
-        ),
-        dispose: (BuildContext context, Bloc bloc) => bloc._dispose(),
-      );
+    child: child,
+    create: (BuildContext context) =>
+        Bloc._(persistenceProvider: persistenceProvider),
+    dispose: (BuildContext context, Bloc bloc) => bloc._dispose(),
+  );
 }
 
 class Bloc {
@@ -33,16 +32,15 @@ class Bloc {
       return Provider.of<Bloc>(context, listen: false);
     } on ProviderNotFoundException {
       throw BlocNotFoundError(
-          'Could not find a FeatureDiscovery widget above this context.'
-          '\nFeatureDiscovery works like an inherited widget. You must wrap your widget tree in it.');
+        'Could not find a FeatureDiscovery widget above this context.'
+        '\nFeatureDiscovery works like an inherited widget. You must wrap your widget tree in it.',
+      );
     }
   }
 
   final PersistenceProvider persistenceProvider;
 
-  Bloc._({
-    required this.persistenceProvider,
-  });
+  Bloc._({required this.persistenceProvider});
 
   /// This [StreamController] allows to send events of type [EventType].
   /// The [DescribedFeatureOverlay]s will be able to handle these events by checking the
@@ -61,7 +59,8 @@ class Bloc {
 
   int? _activeStepIndex;
 
-  String? get activeFeatureId => _steps == null ||
+  String? get activeFeatureId =>
+      _steps == null ||
           _activeStepIndex == null ||
           _activeStepIndex! >= _steps!.length ||
           _activeStepIndex! < 0
@@ -101,8 +100,10 @@ class Bloc {
   }
 
   void discoverFeatures(Iterable<String> steps) async {
-    assert(steps.isNotEmpty,
-        'You need to pass at least one step to [FeatureDiscovery.discoverFeatures].');
+    assert(
+      steps.isNotEmpty,
+      'You need to pass at least one step to [FeatureDiscovery.discoverFeatures].',
+    );
 
     _steps = steps as List<String?>?;
     _stepsToIgnore = await _alreadyCompletedSteps;
@@ -173,11 +174,7 @@ class Bloc {
 ///  * [dismiss] signals that the overlay should attempt to dismiss itself, which happens
 ///    when the end user taps or swipes outside of the overlay or
 ///    [FeatureDiscovery.dismiss] is called manually.
-enum EventType {
-  open,
-  complete,
-  dismiss,
-}
+enum EventType { open, complete, dismiss }
 
 class BlocNotFoundError extends Error {
   final String message;

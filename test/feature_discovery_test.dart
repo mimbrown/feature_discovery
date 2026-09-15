@@ -1,6 +1,5 @@
 import 'package:feature_discovery/feature_discovery.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'widgets.dart';
@@ -17,8 +16,9 @@ void main() {
       'featureIdD',
     ];
     final texts = textsToMatch(steps);
-    testWidgets('Displaying two steps and dismissing before the third',
-        (WidgetTester tester) async {
+    testWidgets('Displaying two steps and dismissing before the third', (
+      WidgetTester tester,
+    ) async {
       await tester.pumpWidget(const TestWidget(featureIds: steps));
       final finder = find.byType(TestIcon);
       expect(finder, findsNWidgets(steps.length));
@@ -52,27 +52,31 @@ void main() {
     const featureIds = <String>['featA', 'featB', 'featC'];
     final texts = textsToMatch(featureIds);
     testWidgets(
-        "Calling [discoverFeatures] with two ids that aren't associated with an overlay",
-        (WidgetTester tester) async {
-      await tester.pumpWidget(TestWidget(
-          // Only one overlay will be placed in the tree
-          featureIds: featureIds.sublist(1, 2)));
-      final finder = find.byType(TestIcon);
-      expect(finder, findsOneWidget);
-      final context = tester.firstState(finder).context;
-      FeatureDiscovery.discoverFeatures(context, featureIds);
-      await tester.pumpAndSettle();
-      // First overlay should NOT appear
-      expect(find.text(texts[0]), findsNothing);
-      await FeatureDiscovery.completeCurrentStep(context);
-      await tester.pumpAndSettle();
-      // Second overlay should appear
-      expect(find.text(texts[1]), findsOneWidget);
-      await FeatureDiscovery.completeCurrentStep(context);
-      await tester.pumpAndSettle();
-      // No overlay should remain on screen
-      texts.forEach((t) => expect(find.text(t), findsNothing));
-    });
+      "Calling [discoverFeatures] with two ids that aren't associated with an overlay",
+      (WidgetTester tester) async {
+        await tester.pumpWidget(
+          TestWidget(
+            // Only one overlay will be placed in the tree
+            featureIds: featureIds.sublist(1, 2),
+          ),
+        );
+        final finder = find.byType(TestIcon);
+        expect(finder, findsOneWidget);
+        final context = tester.firstState(finder).context;
+        FeatureDiscovery.discoverFeatures(context, featureIds);
+        await tester.pumpAndSettle();
+        // First overlay should NOT appear
+        expect(find.text(texts[0]), findsNothing);
+        await FeatureDiscovery.completeCurrentStep(context);
+        await tester.pumpAndSettle();
+        // Second overlay should appear
+        expect(find.text(texts[1]), findsOneWidget);
+        await FeatureDiscovery.completeCurrentStep(context);
+        await tester.pumpAndSettle();
+        // No overlay should remain on screen
+        texts.forEach((t) => expect(find.text(t), findsNothing));
+      },
+    );
   });
 
   group('Duplicate feature ids', () {
@@ -83,20 +87,19 @@ void main() {
             'featureIdB',
             'featureIdC',
           ],
-          steps = <String>[
-            'featureIdA',
-            'featureIdB',
-            'featureIdC',
-          ];
+          steps = <String>['featureIdA', 'featureIdB', 'featureIdC'];
 
       final texts = textsToMatch(steps);
 
-      testWidgets('allowShowingDuplicate == $allowShowingDuplicate',
-          (WidgetTester tester) async {
-        await tester.pumpWidget(TestWidget(
-          featureIds: featureIds,
-          allowShowingDuplicate: allowShowingDuplicate,
-        ));
+      testWidgets('allowShowingDuplicate == $allowShowingDuplicate', (
+        WidgetTester tester,
+      ) async {
+        await tester.pumpWidget(
+          TestWidget(
+            featureIds: featureIds,
+            allowShowingDuplicate: allowShowingDuplicate,
+          ),
+        );
 
         final finder = find.byType(TestIcon);
         expect(finder, findsNWidgets(featureIds.length));
@@ -114,8 +117,10 @@ void main() {
         // overlay 2 and 3 should be displayed or just one of them
         // depending on allowShowingDuplicate.
         expect(find.text(texts[0]), findsNothing);
-        expect(find.text(texts[1]),
-            allowShowingDuplicate ? findsNWidgets(2) : findsOneWidget);
+        expect(
+          find.text(texts[1]),
+          allowShowingDuplicate ? findsNWidgets(2) : findsOneWidget,
+        );
 
         await FeatureDiscovery.completeCurrentStep(context);
         await tester.pumpAndSettle();
@@ -125,19 +130,22 @@ void main() {
       });
     }
 
-    testWidgets('Show other overlay after duplicate has been removed',
-        (WidgetTester tester) async {
+    testWidgets('Show other overlay after duplicate has been removed', (
+      WidgetTester tester,
+    ) async {
       const featureId = 'feature';
       const featureIcon = Icons.content_copy;
       const staticFeatureTitle = 'Static',
           disposableFeatureTitle = 'Disposable';
 
-      await tester.pumpWidget(const WidgetWithDisposableFeature(
-        featureId: featureId,
-        featureIcon: featureIcon,
-        staticFeatureTitle: staticFeatureTitle,
-        disposableFeatureTitle: disposableFeatureTitle,
-      ));
+      await tester.pumpWidget(
+        const WidgetWithDisposableFeature(
+          featureId: featureId,
+          featureIcon: featureIcon,
+          staticFeatureTitle: staticFeatureTitle,
+          disposableFeatureTitle: disposableFeatureTitle,
+        ),
+      );
 
       final stateFinder = find.byType(WidgetWithDisposableFeature);
       expect(stateFinder, findsOneWidget);
@@ -202,9 +210,9 @@ void main() {
         // The Container that makes the content of the feature overlay of the test widget has a static
         // height of 9e3, which ensures that the content definitely covers the 4e3 surface size height
         // if OverflowMode.clipContent is not enabled.
-        await (TestWidgetsFlutterBinding.ensureInitialized()
-                as TestWidgetsFlutterBinding)
-            .setSurfaceSize(const Size(3e2, 4e3));
+        await (TestWidgetsFlutterBinding.ensureInitialized()).setSurfaceSize(
+          const Size(3e2, 4e3),
+        );
 
         await tester.pumpWidget(
           OverflowingDescriptionFeature(

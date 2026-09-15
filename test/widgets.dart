@@ -1,5 +1,5 @@
 import 'package:feature_discovery/feature_discovery.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// This provides necessary components for constructing features during testing
 /// like [FeatureDiscover] and [MaterialApp].
@@ -8,24 +8,19 @@ class TestWrapper extends StatelessWidget {
   /// This will be passed to [Scaffold.body].
   final Widget? child;
 
-  const TestWrapper({
-    Key? key,
-    this.child,
-  }) : super(key: key);
+  const TestWrapper({Key? key, this.child}) : super(key: key);
 
   @override
   Widget build(_) => FeatureDiscovery.withProvider(
-        persistenceProvider: const NoPersistenceProvider(),
-        child: MaterialApp(
-          title: 'FeatureDiscovery Test',
-          home: Scaffold(
-            appBar: AppBar(
-              title: const Text('TestWidget'),
-            ),
-            body: child,
-          ),
-        ),
-      );
+    persistenceProvider: const NoPersistenceProvider(),
+    child: MaterialApp(
+      title: 'FeatureDiscovery Test',
+      home: Scaffold(
+        appBar: AppBar(title: const Text('TestWidget')),
+        body: child,
+      ),
+    ),
+  );
 }
 
 @visibleForTesting
@@ -41,17 +36,19 @@ class TestWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => TestWrapper(
-        child: Center(
-          child: Column(
-            children: featureIds
-                .map((String featureId) => TestIcon(
-                      featureId: featureId,
-                      allowShowingDuplicate: allowShowingDuplicate,
-                    ))
-                .toList(),
-          ),
-        ),
-      );
+    child: Center(
+      child: Column(
+        children: featureIds
+            .map(
+              (String featureId) => TestIcon(
+                featureId: featureId,
+                allowShowingDuplicate: allowShowingDuplicate,
+              ),
+            )
+            .toList(),
+      ),
+    ),
+  );
 }
 
 @visibleForTesting
@@ -115,45 +112,42 @@ class OverflowingDescriptionFeature extends StatelessWidget {
 
   @override
   Widget build(_) => TestWrapper(
-        child: Builder(
-          builder: (context) {
-            onContext!(context);
+    child: Builder(
+      builder: (context) {
+        onContext!(context);
 
-            return Stack(
-              children: <Widget>[
-                Align(
-                  alignment: Alignment.topCenter,
-                  child: DescribedFeatureOverlay(
-                    featureId: featureId!,
-                    tapTarget: const Icon(Icons.arrow_drop_down_circle),
-                    description: Container(
-                      width: double.infinity,
-                      height: 9e3,
-                      color: const Color(0xff000000),
-                    ),
-                    contentLocation: ContentLocation.below,
-                    enablePulsingAnimation: false,
-                    overflowMode: mode!,
-                    onDismiss: () async {
-                      onDismiss?.call();
-                      return true;
-                    },
-                    child: Container(
-                      width: 1e2,
-                      height: 1e2,
-                      color: const Color(0xfffffff),
-                    ),
-                  ),
+        return Stack(
+          children: <Widget>[
+            Align(
+              alignment: Alignment.topCenter,
+              child: DescribedFeatureOverlay(
+                featureId: featureId!,
+                tapTarget: const Icon(Icons.arrow_drop_down_circle),
+                description: Container(
+                  width: double.infinity,
+                  height: 9e3,
+                  color: const Color(0xff000000),
                 ),
-                Align(
-                  alignment: Alignment.bottomCenter,
-                  child: Icon(icon),
+                contentLocation: ContentLocation.below,
+                enablePulsingAnimation: false,
+                overflowMode: mode!,
+                onDismiss: () async {
+                  onDismiss?.call();
+                  return true;
+                },
+                child: Container(
+                  width: 1e2,
+                  height: 1e2,
+                  color: const Color(0xfffffff),
                 ),
-              ],
-            );
-          },
-        ),
-      );
+              ),
+            ),
+            Align(alignment: Alignment.bottomCenter, child: Icon(icon)),
+          ],
+        );
+      },
+    ),
+  );
 }
 
 /// This widget takes two features with the same [featureId], one having a title of [staticFeatureTitle]
@@ -200,26 +194,26 @@ class WidgetWithDisposableFeatureState
 
   @override
   Widget build(_) => TestWrapper(
-        child: Column(
-          children: <Widget>[
-            if (_showDisposableFeature)
-              DescribedFeatureOverlay(
-                featureId: widget.featureId,
-                allowShowingDuplicate: false,
-                enablePulsingAnimation: false,
-                title: Text(widget.disposableFeatureTitle),
-                tapTarget: Icon(widget.featureIcon),
-                child: Container(),
-              ),
-            DescribedFeatureOverlay(
-              featureId: widget.featureId,
-              allowShowingDuplicate: false,
-              enablePulsingAnimation: false,
-              title: Text(widget.staticFeatureTitle),
-              tapTarget: Icon(widget.featureIcon),
-              child: Container(),
-            ),
-          ],
+    child: Column(
+      children: <Widget>[
+        if (_showDisposableFeature)
+          DescribedFeatureOverlay(
+            featureId: widget.featureId,
+            allowShowingDuplicate: false,
+            enablePulsingAnimation: false,
+            title: Text(widget.disposableFeatureTitle),
+            tapTarget: Icon(widget.featureIcon),
+            child: Container(),
+          ),
+        DescribedFeatureOverlay(
+          featureId: widget.featureId,
+          allowShowingDuplicate: false,
+          enablePulsingAnimation: false,
+          title: Text(widget.staticFeatureTitle),
+          tapTarget: Icon(widget.featureIcon),
+          child: Container(),
         ),
-      );
+      ],
+    ),
+  );
 }
